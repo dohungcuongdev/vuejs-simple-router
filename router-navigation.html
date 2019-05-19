@@ -1,0 +1,139 @@
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+
+<style>
+    .router-link-active {
+    color: red;
+  }
+
+  li {
+    cursor: pointer;
+  }
+</style>
+
+<div id="app">
+  <h1>Hello App!</h1>
+  <p>
+    <!-- use router-link component for navigation. -->
+    <!-- specify the link by passing the `to` prop. -->
+    <!-- `<router-link>` will be rendered as an `<a>` tag by default -->
+    <button v-on:click="navigateFoo()">Navigate Foo</button><br/>
+    <button v-on:click="navigateBar()">Navigate Bar</button><br/>
+    <button v-on:click="navigateHome()">Navigate Home</button><br/>
+    <button v-on:click="navigateHome2()">Navigate Home 2</button><br/>
+    <button v-on:click="navigateUser()">Navigate User 123</button><br/>
+    <button v-on:click="goPlusOne()">Go Forward</button><br/>
+    <button v-on:click="goMinusOne()">Go Back</button><br/>
+    <button v-on:click="goPlusThree()">Go Forward 3 Steps</button><br/>
+    <button v-on:click="goPlus100()">Go Forward 100 Steps</button><br/>
+    <button v-on:click="goMinus100()">Go Back 100 Steps</button><br/>
+    <router-link to="/foo" tag="li">Go to Foo</router-link><br/>
+    <router-link to="/bar" tag="li">Go to Bar</router-link><br/>
+    <router-link :to="{ path: '/home'}">Go to Home</router-link><br/>
+    <router-link :to="{ path: '/home'}" replace>Go to Home</router-link><br/>
+    <router-link :to="{ path: 'home'}" append>Append /home</router-link><br/>
+    <li><router-link :to="{ name: 'user', params: { id: 123 } }">Go to User 123</router-link></li>
+  </p>
+  <!-- route outlet -->
+  <!-- component matched by the route will render here -->
+  <router-view></router-view>
+</div>
+
+<script>
+// 0. If using a module system (e.g. via vue-cli), import Vue and VueRouter
+// and then call `Vue.use(VueRouter)`.
+
+// 1. Define route components.
+// These can be imported from other files
+const Foo = { template: '<div>foo</div>' }
+const Bar = { template: '<div>bar</div>' }
+const Home = { template: '<div>home</div>' }
+const User = { template: '<div>user id = {{ $route.params.id }}</div>' }
+
+// 2. Define some routes
+// Each route should map to a component. The "component" can
+// either be an actual component constructor created via
+// `Vue.extend()`, or just a component options object.
+// We'll talk about nested routes later.
+const routes = [
+  { path: '/foo', component: Foo },
+  { path: '/bar', component: Bar },
+  { path: '/home', component: Home},
+  { path: '/home/home', component: { template: '<div>home/home</div>' }},
+  { path: '/user/:id', name: 'user', component: User}
+]
+
+// 3. Create the router instance and pass the `routes` option
+// You can pass in additional options here, but let's
+// keep it simple for now.
+const router = new VueRouter({
+  routes // short for `routes: routes`
+})
+
+// 4. Create and mount the root instance.
+// Make sure to inject the router with the router option to make the
+// whole app router-aware.
+const app = new Vue({
+  router,
+  data: {
+    fooURL: 'foo',
+    navigateFoo() {
+      router.push(this.fooURL) // literal string path
+      this.appendData(this.fooURL)
+    }, 
+    navigateBar() {
+      router.push('bar') // literal string path
+      this.appendData('bar')
+    }, 
+    navigateHome() {
+      router.push({ path: 'home' }) // object
+      this.appendData('home')
+    },
+    navigateHome2() {
+      // Setting replace prop will call router.replace() instead of router.push() when clicked, 
+      // so the navigation will not leave a history record.
+      // example click on Navigate User 123 then click navigateHome2 user/123 will be changed into home
+      // while clicking on navigateHome user/123 will be changed into user/home
+      router.replace({ path: '/home' })
+      this.appendData('home')
+    },
+    navigateUser() {
+      router.push({ name: 'user', params: { id: '123' } }) // named route with params
+      this.appendData('user/123')
+    },
+    /* router.go(n)
+    This method takes a single integer as parameter that indicates by how many steps 
+    to go forwards or go backwards in the history stack, similar to window.history.go(n). */
+    goPlusOne() {
+      // go forward by one record, the same as history.forward()
+      router.go(1)
+    },
+    goMinusOne() {
+      // go back by one record, the same as history.back()
+      router.go(-1)
+    },
+    goPlusThree() {
+      // go forward by 3 records
+      router.go(3)
+    },
+    goPlus100() {
+      // fails silently if there aren't that many records.
+      router.go(100)
+    },
+    goMinus100() {
+      // fails silently if there aren't that many records.
+      router.go(-100)
+    },
+    counter: 0,
+    appendData: function(link) {
+      var para = document.createElement("p");
+      var node = document.createTextNode("This is " + link + " navigation " + ++this.counter);
+      para.appendChild(node);
+      var element = document.getElementById("app");
+      element.appendChild(para);
+    }
+  }
+}).$mount('#app')
+
+// Now the app has started!
+</script>
